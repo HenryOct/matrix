@@ -58,15 +58,58 @@ namespace mat
 
     double matrix::operator()(int i, int j)
     {
-        if (i < 0 || i >= rows || j < 0 || j >= cols)
+        if (i < 0 || i > rows || j < 0 || j > cols)
             throw std::out_of_range("");
-        return data[i][j];
+        return data[i-1][j-1];
     }
 
     double matrix::determinant()
     {
         if(rows != cols)
-            throw 
-    }
+            throw std::logic_error("rows and cols of the matrix must be equal to have a determinant");
+        if(rows == 0 || cols == 0)
+            throw std::logic_error("empty matrix has no determinant");
+        
+        std::vector<std::vector<double>> mat = data;
+        double det = 1.0;
+        double epsilon = 1e-10;
+        
+        for(int i=0; i<rows; i++)
+        {
+            double main_val = std::abs(mat[i][i]);
+            int pivot_row = i;
+            for(int j=i+1; j<rows; j++)
+            {
+                if (std::abs(mat[j][i]) > main_val)
+                {
+                    main_val = std::abs(mat[j][i]);
+                    pivot_row = j;
+                }
+            }
 
+            if(main_val <= epsilon)
+                return 0.0;
+            
+            if(pivot_row != i)
+            {
+                std::swap(mat[i], mat[pivot_row]);
+                det = -det;
+            }
+
+            det *= mat[i][i];
+
+            double pivot = mat[i][i];
+            for(int j=i; j<cols; j++)
+                mat[i][j] /= pivot;
+
+            for (int k = i + 1; k < rows; k++)
+            {
+                double factor = mat[k][i];
+                for (int j = i; j < cols; j++)
+                    mat[k][j] -= factor * mat[i][j];
+            }
+        }
+
+        return det;
+    }
 }
